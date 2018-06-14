@@ -3,6 +3,7 @@ import {Message, Transport, TransportContext} from "roal";
 import * as Noble from "noble/lib/noble";
 import * as buildBindings from "noble/lib/resolve-bindings";
 import {defer, Deferred} from "./defer";
+import {assemble} from "blue-chunk";
 
 export interface NobleTransportOptions {
   serviceUUID: string;
@@ -91,25 +92,9 @@ export class NobleTransport extends Transport{
   _discovered(characteristic) {
     this._characteristic = characteristic;
 
-    let buf = Buffer.allocUnsafe(0);
-    let seq = 0;
-
+    const assembler = assemble(data => this.read(data));
     // data callback receives notifications
-    characteristic.on('data', (data: Buffer, isNotification) => {
-      let n = data.readUInt16LE(0);
-      if (seq !== (n & 0x7FFF)) {
-        throw new Error('sequence not match');
-      }
-      buf = Buffer.concat([buf, data.slice(2)], buf.length + data.length - 2);
-      if (n & 0x8000) {
-        // end
-        this.read(buf);
-        buf = Buffer.allocUnsafe(0);
-        seq = 0;
-      } else {
-        seq += data.length - 2;
-      }
-    });
+    characteristic.on('data', data => assembler.feed(data));
 
     // subscribe to be notified whenever the peripheral update the characteristic
     characteristic.subscribe(error => {
