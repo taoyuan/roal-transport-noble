@@ -149,5 +149,4 @@ function promiseFromCallback(fn: Function) {
       resolve(result);
     })
   });
-
 }
