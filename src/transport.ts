@@ -1,4 +1,4 @@
-import {Message, Transport, TransportContext} from "roal";
+import {Transport, TransportContext} from "roal";
 // import * as noble from "noble";
 import * as Noble from "noble/lib/noble";
 import * as buildBindings from "noble/lib/resolve-bindings";
@@ -134,7 +134,7 @@ export class NobleTransport extends Transport{
     this.recv(JSON.parse(s));
   }
 
-  async send(message: Message, context?: TransportContext) {
+  async send(message: any, context?: TransportContext) {
     await this.ready;
     this._characteristic.write(Buffer.from(JSON.stringify(message)), 'utf-8');
   }
